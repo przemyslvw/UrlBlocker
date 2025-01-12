@@ -5,11 +5,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>URL List Manager</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 10px; }
-        ul { list-style-type: none; padding: 0; }
-        li { margin: 5px 0; display: flex; align-items: center; }
-        button { margin-left: 10px; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 10px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #0073e6;
+        }
+        input {
+            width: calc(100% - 90px);
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+            font-size: 14px;
+        }
+        button {
+            padding: 8px 12px;
+            font-size: 14px;
+            border: none;
+            border-radius: 4px;
+            background-color: #0073e6;
+            color: #fff;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #005bb5;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 10px 0 0;
+        }
+        li {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        li button {
+            margin-left: 10px;
+            background-color: #ff4d4d;
+        }
+        li button:hover {
+            background-color: #cc0000;
+        }
     </style>
+    
 </head>
 <body>
     <h3>Manage URLs</h3>
