@@ -1,94 +1,71 @@
-// Pobierz listę URL-i i przetwórz stronę
-function processLinks() {
+// Pobierz listę URL-i z chrome.storage
+function getUrls(callback) {
     chrome.storage.sync.get("urls", (data) => {
-        const urls = data.urls || [];
-        const localHtml = chrome.runtime.getURL("replacement.html");
-
-        // Pobierz wszystkie linki na stronie
-        const links = document.querySelectorAll("a");
-
-        links.forEach((link) => {
-            const href = link.href;
-
-            // Sprawdź, czy URL znajduje się na liście
-            if (urls.some(url => href.includes(url))) {
-                console.log(`[URL Manager] Replacing link: ${href} -> ${localHtml}`);
-                
-                // Podmień link na lokalny plik HTML
-                link.href = localHtml;
-
-                // (Opcjonalne) Dodaj dodatkowy styl, aby wyróżnić zmienione linki
-                link.style.color = "red";
-                link.style.fontWeight = "bold";
-                // dodaj filter: blur(1.5rem);
-                link.style.filter = "blur(1.5rem)";
-            }
-        });
+        callback(data.urls || []);
     });
 }
 
-// Uruchom funkcję po załadowaniu strony
-processLinks();
-// Funkcja sprawdzająca linki w obrazkach
-function processImageLinks() {
-    chrome.storage.sync.get("urls", (data) => {
-        const urls = data.urls || [];
-        const localHtml = chrome.runtime.getURL("replacement.html");
+// Podmień link na lokalny plik HTML i dodaj styl
+function replaceLink(element, localHtml, style) {
+    element.href = localHtml;
+    Object.assign(element.style, style);
+}
 
-        // Pobierz wszystkie obrazki na stronie
-        const images = document.querySelectorAll("img");
+// Podmień obrazek na lokalny plik HTML i dodaj styl
+function replaceImage(element, localHtml, style) {
+    element.src = localHtml;
+    Object.assign(element.style, style);
+}
 
-        images.forEach((img) => {
-            const src = img.src;
+// Podmień iframe na lokalny plik HTML i dodaj styl
+function replaceIframe(element, localHtml, style) {
+    element.src = localHtml;
+    Object.assign(element.style, style);
+}
 
-            // Sprawdź, czy URL znajduje się na liście
-            if (urls.some(url => src.includes(url))) {
-                console.log(`[URL Manager] Replacing image link: ${src} -> ${localHtml}`);
-                
-                // Podmień link na lokalny plik HTML
-                img.src = localHtml;
-
-                // (Opcjonalne) Dodaj dodatkowy styl, aby wyróżnić zmienione obrazki
-                img.style.border = "2px solid red";
-                // dodaj filter: blur(1.5rem);
-                img.style.filter = "blur(1.5rem)";
-            }
-        });
+// Przetwórz linki na stronie
+function processLinks(urls, localHtml) {
+    const links = document.querySelectorAll("a");
+    links.forEach((link) => {
+        if (urls.some(url => link.href.includes(url))) {
+            console.log(`[URL Manager] Replacing link: ${link.href} -> ${localHtml}`);
+            replaceLink(link, localHtml, { color: "red", fontWeight: "bold", filter: "blur(1.5rem)", height: "0px", width: "0px" });
+        }
     });
 }
 
-// Uruchom funkcję po załadowaniu strony
-// Removed empty setInterval call
-processImageLinks() 
+// Przetwórz obrazki na stronie
+function processImageLinks(urls, localHtml) {
+    const images = document.querySelectorAll("img");
+    images.forEach((img) => {
+        if (urls.some(url => img.src.includes(url))) {
+            console.log(`[URL Manager] Replacing image link: ${img.src} -> ${localHtml}`);
+            replaceImage(img, localHtml, { border: "2px solid red", filter: "blur(1.5rem)", height: "0px", width: "0px" });
+        }
+    });
+}
 
-
-// Funkcja sprawdzająca linki w iframe
-function processIframeLinks() {
-    const localHtml = chrome.runtime.getURL("replacement.html");
-
-    // Pobierz wszystkie iframe na stronie
+// Przetwórz iframe na stronie
+function processIframeLinks(localHtml) {
     const iframes = document.querySelectorAll("iframe");
-
     iframes.forEach((iframe) => {
-        const src = iframe.src;
-
-        console.log(`[URL Manager] Replacing iframe link: ${src} -> ${localHtml}`);
-        
-        // Podmień link na lokalny plik HTML
-        iframe.src = localHtml;
-
-        // (Opcjonalne) Dodaj dodatkowy styl, aby wyróżnić zmienione iframe
-        iframe.style.border = "2px solid red";
-        // dodaj filter: blur(1.5rem);
-        iframe.style.filter = "blur(1.5rem)";
+        console.log(`[URL Manager] Replacing iframe link: ${iframe.src} -> ${localHtml}`);
+        replaceIframe(iframe, localHtml, { border: "2px solid red", filter: "blur(1.5rem)", height: "0px", width: "0px" });
     });
 }
 
-// Uruchom funkcję po załadowaniu strony
-processIframeLinks();
+// Uruchom funkcje przetwarzające po załadowaniu strony
+function processAllLinks() {
+    const localHtml = chrome.runtime.getURL("replacement.html");
+    getUrls((urls) => {
+        processLinks(urls, localHtml);
+        processImageLinks(urls, localHtml);
+        processIframeLinks(localHtml);
+    });
+}
+
+// Uruchom funkcje przetwarzające po załadowaniu strony
+processAllLinks();
+
 // Sprawdzaj linki, obrazki i iframe co trzy sekundy
-setInterval(() => {
-    processLinks();
-    processImageLinks();
-    processIframeLinks();
-}, 3000);
+setInterval(processAllLinks, 1000);
