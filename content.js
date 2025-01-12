@@ -5,7 +5,7 @@ function processLinks() {
         const localHtml = chrome.runtime.getURL("replacement.html");
 
         // Pobierz wszystkie linki na stronie
-        const links = document.querySelectorAll("a");
+        const links = document.querySelectorAll("a, img");
 
         links.forEach((link) => {
             const href = link.href;
