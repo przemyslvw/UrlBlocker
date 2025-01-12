@@ -4,22 +4,18 @@ function processLinks() {
         const urls = data.urls || [];
         const localHtml = chrome.runtime.getURL("replacement.html");
 
-        // Pobierz wszystkie linki i obrazy na stronie
-        const links = document.querySelectorAll("a, img");
+        // Pobierz wszystkie linki na stronie
+        const links = document.querySelectorAll("a");
 
         links.forEach((link) => {
-            const href = link.href || link.src;
+            const href = link.href;
 
             // Sprawdź, czy URL znajduje się na liście
             if (urls.some(url => href.includes(url))) {
                 console.log(`[URL Manager] Replacing link: ${href} -> ${localHtml}`);
                 
                 // Podmień link na lokalny plik HTML
-                if (link.tagName.toLowerCase() === 'a') {
-                    link.href = localHtml;
-                } else if (link.tagName.toLowerCase() === 'img') {
-                    link.src = localHtml;
-                }
+                link.href = localHtml;
 
                 // (Opcjonalne) Dodaj dodatkowy styl, aby wyróżnić zmienione linki
                 link.style.color = "red";
@@ -31,6 +27,3 @@ function processLinks() {
 
 // Uruchom funkcję po załadowaniu strony
 processLinks();
-
-// Uruchom funkcję co 5 sekund
-setInterval(processLinks, 5000);
