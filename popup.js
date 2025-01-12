@@ -50,3 +50,26 @@ addUrlButton.addEventListener('click', addUrl);
 
 // Początkowe załadowanie
 loadUrls();
+
+// Losowe powitanie
+function showRandomGreeting() {
+    const greetings = [
+        "Witaj!", 
+        "Cześć!", 
+        "Miłego dnia!", 
+        "Hej!", 
+        "Jak się masz?", 
+        "Dzień dobry!", 
+        "Witamy ponownie!", 
+        "Miło Cię widzieć!", 
+        "Jak leci?", 
+        "Co słychać?"
+    ];
+    const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
+    const greetingDiv = document.getElementById("greeting");
+    greetingDiv.textContent = randomGreeting;
+}
+
+// Wywołanie powitania po załadowaniu popupu
+showRandomGreeting();
+

@@ -60,10 +60,34 @@
         li button:hover {
             background-color: #cc0000;
         }
+            #header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        padding: 10px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    #icon {
+        width: 48px;
+        height: 48px;
+        margin-right: 10px;
+    }
+    #greeting {
+        font-size: 18px;
+        font-weight: bold;
+        color: #0073e6;
+    }
+
     </style>
     
 </head>
 <body>
+    <div id="header">
+        <img src="img/icon_128x128.png" alt="Icon" id="icon" />
+        <div id="greeting"></div>
+    </div>
     <h3>Manage URLs</h3>
     <input type="text" id="urlInput" placeholder="Add a URL" />
     <button id="addUrlButton">Add</button>
