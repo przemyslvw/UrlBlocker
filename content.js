@@ -28,6 +28,7 @@ function processLinks(urls, localHtml) {
     const links = document.querySelectorAll("a");
     links.forEach((link) => {
         if (urls.some(url => link.href.includes(url))) {
+            console.log(`[URL Manager] Found unwanted URL in link: ${link.href}`);
             console.log(`[URL Manager] Replacing link: ${link.href} -> ${localHtml}`);
             replaceLink(link, localHtml, { color: "red", fontWeight: "bold", filter: "blur(1.5rem)", height: "0px", width: "0px" });
         }
@@ -39,6 +40,7 @@ function processImageLinks(urls, localHtml) {
     const images = document.querySelectorAll("img");
     images.forEach((img) => {
         if (urls.some(url => img.src.includes(url))) {
+            console.log(`[URL Manager] Found unwanted URL in image: ${img.src}`);
             console.log(`[URL Manager] Replacing image link: ${img.src} -> ${localHtml}`);
             replaceImage(img, localHtml, { border: "2px solid red", filter: "blur(1.5rem)", height: "0px", width: "0px" });
         }
@@ -49,6 +51,7 @@ function processImageLinks(urls, localHtml) {
 function processIframeLinks(localHtml) {
     const iframes = document.querySelectorAll("iframe");
     iframes.forEach((iframe) => {
+        console.log(`[URL Manager] Found unwanted URL in iframe: ${iframe.src}`);
         console.log(`[URL Manager] Replacing iframe link: ${iframe.src} -> ${localHtml}`);
         replaceIframe(iframe, localHtml, { border: "2px solid red", filter: "blur(1.5rem)", height: "0px", width: "0px" });
     });
