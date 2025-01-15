@@ -72,3 +72,25 @@ processAllLinks();
 
 // Sprawdzaj linki, obrazki i iframe co trzy sekundy
 setInterval(processAllLinks, 1000);
+// Dodaj funkcjonalność do przetwarzania elementów wideo na stronie
+function processVideoLinks(urls, localHtml) {
+    const videos = document.querySelectorAll("video");
+    videos.forEach((video) => {
+        if (urls.some(url => video.src.includes(url))) {
+            console.log(`[URL Manager] Found unwanted URL in video: ${video.src}`);
+            console.log(`[URL Manager] Replacing video link: ${video.src} -> ${localHtml}`);
+            replaceIframe(video, localHtml, { border: "2px solid red", filter: "blur(1.5rem)", height: "0px", width: "0px" });
+        }
+    });
+}
+
+// Uruchom funkcje przetwarzające po załadowaniu strony
+function processAllLinks() {
+    const localHtml = chrome.runtime.getURL("replacement.html");
+    getUrls((urls) => {
+        processLinks(urls, localHtml);
+        processImageLinks(urls, localHtml);
+        processIframeLinks(localHtml);
+        processVideoLinks(urls, localHtml);
+    });
+}
