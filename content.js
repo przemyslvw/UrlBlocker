@@ -94,3 +94,15 @@ function processAllLinks() {
         processVideoLinks(urls, localHtml);
     });
 }
+
+
+// funkcja reagująca na zapytania GET
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "GET") {
+        console.log(`[URL Manager] GET request received from sender: ${JSON.stringify(sender)}`);
+        getUrls((urls) => {
+            sendResponse({ urls });
+        });
+    }
+    return true;
+});
