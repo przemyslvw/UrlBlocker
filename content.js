@@ -31,6 +31,10 @@ function processLinks(urls, localHtml) {
             console.log(`[URL Manager] Found unwanted URL in link: ${link.href}`);
             console.log(`[URL Manager] Replacing link: ${link.href} -> ${localHtml}`);
             replaceLink(link, localHtml, { color: "red", fontWeight: "bold", filter: "blur(1.5rem)", height: "0px", width: "0px" });
+            link.parentElement.style.filter = "blur(1.5rem)";
+            link.parentElement.style.height = "0px";
+            link.parentElement.style.width = "0px";
+            link.remove();
         }
     });
 }
@@ -44,6 +48,22 @@ function processImageLinks(urls, localHtml) {
             console.log(`[URL Manager] Replacing image link: ${img.src} -> ${localHtml}`);
             replaceImage(img, localHtml, { border: "2px solid red", filter: "blur(1.5rem)", height: "0px", width: "0px" });
         }
+    });
+}
+
+// Przetwórz miniatury na ytube znacznik <ytd-thumbnail>
+function processThumbnailLinks(localHtml) {
+    const thumbnails = [
+        ...document.querySelectorAll("ytd-thumbnail"),
+        ...document.querySelectorAll("yt-thumbnail-view-model"),
+        ...document.querySelectorAll("ytd-rich-shelf-renderer"),
+        ...document.querySelectorAll("ytm-shorts-lockup-view-model"),
+        ...document.querySelectorAll("yt-collection-thumbnail-view-model")
+    ];
+    thumbnails.forEach((thumbnail) => {
+            console.log(`[URL Manager] Found unwanted URL in thumbnail: ${thumbnail.src}`);
+            console.log(`[URL Manager] Replacing thumbnail link: ${thumbnail.src} -> ${localHtml}`);
+            replaceImage(thumbnail, localHtml, { border: "2px solid red", filter: "blur(1.5rem)", height: "0px", width: "0px" });
     });
 }
 
@@ -64,6 +84,7 @@ function processAllLinks() {
         processLinks(urls, localHtml);
         processImageLinks(urls, localHtml);
         processIframeLinks(localHtml);
+        processThumbnailLinks(localHtml);
     });
 }
 
@@ -85,24 +106,13 @@ function processVideoLinks(urls, localHtml) {
 }
 
 // Uruchom funkcje przetwarzające po załadowaniu strony
-function processAllLinks() {
-    const localHtml = chrome.runtime.getURL("replacement.html");
-    getUrls((urls) => {
-        processLinks(urls, localHtml);
-        processImageLinks(urls, localHtml);
-        processIframeLinks(localHtml);
-        processVideoLinks(urls, localHtml);
-    });
-}
-
-
-// funkcja reagująca na zapytania GET
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === "GET") {
-        console.log(`[URL Manager] GET request received from sender: ${JSON.stringify(sender)}`);
-        getUrls((urls) => {
-            sendResponse({ urls });
-        });
-    }
-    return true;
-});
+// function processAllLinks() {
+//     const localHtml = chrome.runtime.getURL("replacement.html");
+//     getUrls((urls) => {
+//         processLinks(urls, localHtml);
+//         processImageLinks(urls, localHtml);
+//         processIframeLinks(localHtml);
+//         processVideoLinks(urls, localHtml);
+//         // processThumbnailLinks(urls, localHtml);
+//     });
+// }
