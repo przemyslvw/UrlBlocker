@@ -88,6 +88,7 @@ function isWhitelisted(whitelist) {
 function processAllLinks() {
     const whitelist = [
         "gmail.com",    
+        "https://github.com",    
         "majdak.online"
     ];
     if (isWhitelisted(whitelist)) {
