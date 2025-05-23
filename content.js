@@ -5,131 +5,55 @@ function getUrls(callback) {
     });
 }
 
-// Podmień link na lokalny plik HTML i dodaj styl
-function replaceLink(element, localHtml, style) {
-    element.href = localHtml;
+// Uniwersalna funkcja do podmiany atrybutu i stylu elementu
+function replaceElement(element, attr, localHtml, style = {}) {
+    if (attr) element[attr] = localHtml;
     Object.assign(element.style, style);
 }
 
-// Podmień obrazek na lokalny plik HTML i dodaj styl
-function replaceImage(element, localHtml, style) {
-    element.src = localHtml;
-    Object.assign(element.style, style);
+// Sprawdź, czy element zawiera niechciany URL
+function hasUnwantedUrl(element, attr, urls) {
+    return urls.some(url => (element[attr] || "").includes(url));
 }
 
-// Podmień iframe na lokalny plik HTML i dodaj styl
-function replaceIframe(element, localHtml, style) {
-    element.src = localHtml;
-    Object.assign(element.style, style);
-}
-
-// Przetwórz linki na stronie
-function processLinks(urls, localHtml) {
-    const links = document.querySelectorAll("a");
-    links.forEach((link) => {
-        if (urls.some(url => link.href.includes(url))) {
-            console.log(`[URL Manager] Found unwanted URL in link: ${link.href}`);
-            console.log(`[URL Manager] Replacing link: ${link.href} -> ${localHtml}`);
-            replaceLink(link, localHtml, { color: "red", fontWeight: "bold", filter: "blur(1.5rem)", height: "0px", width: "0px" });
-            link.parentElement.style.filter = "blur(1.5rem)";
-            link.parentElement.style.height = "0px";
-            link.parentElement.style.width = "0px";
-            link.remove();
+// Przetwórz elementy na stronie
+function processElements(selector, attr, urls, localHtml, style = {}, remove = false) {
+    document.querySelectorAll(selector).forEach((el) => {
+        if (hasUnwantedUrl(el, attr, urls)) {
+            console.log(`[URL Manager] Found unwanted URL in ${selector}: ${el[attr]}`);
+            console.log(`[URL Manager] Replacing: ${el[attr]} -> ${localHtml}`);
+            replaceElement(el, attr, localHtml, style);
+            if (remove && el.parentElement) el.remove();
         }
     });
 }
 
-// Przetwórz obrazki na stronie
-function processImageLinks(urls, localHtml) {
-    const images = document.querySelectorAll("img");
-    images.forEach((img) => {
-        if (urls.some(url => img.src.includes(url))) {
-            console.log(`[URL Manager] Found unwanted URL in image: ${img.src}`);
-            console.log(`[URL Manager] Replacing image link: ${img.src} -> ${localHtml}`);
-            replaceImage(img, localHtml, { border: "2px solid red", filter: "blur(1.5rem)", height: "0px", width: "0px" });
-        }
+// Przetwórz miniatury YouTube (nie mają src, ale można je zamazać)
+function processThumbnails(localHtml, style = {}) {
+    [
+        "ytd-thumbnail",
+        "yt-thumbnail-view-model",
+        "ytd-rich-shelf-renderer",
+        "ytm-shorts-lockup-view-model",
+        "yt-collection-thumbnail-view-model"
+    ].forEach(selector => {
+        document.querySelectorAll(selector).forEach(thumbnail => {
+            Object.assign(thumbnail.style, style);
+        });
     });
 }
 
-// Przetwórz miniatury na ytube znacznik <ytd-thumbnail>
-function processThumbnailLinks(urls, localHtml) {
-    const thumbnails = [
-        ...document.querySelectorAll("ytd-thumbnail"),
-        ...document.querySelectorAll("yt-thumbnail-view-model"),
-        ...document.querySelectorAll("ytd-rich-shelf-renderer"),
-        ...document.querySelectorAll("ytm-shorts-lockup-view-model"),
-        ...document.querySelectorAll("yt-collection-thumbnail-view-model")
-    ];
-    thumbnails.forEach((thumbnail) => {
-        // Sprawdź, czy element ma src i czy zawiera niechciany URL
-        if (thumbnail.src && urls.some(url => thumbnail.src.includes(url))) {
-            console.log(`[URL Manager] Found unwanted URL in thumbnail: ${thumbnail.src}`);
-            console.log(`[URL Manager] Replacing thumbnail link: ${thumbnail.src} -> ${localHtml}`);
-            replaceImage(thumbnail, localHtml, { border: "2px solid red", filter: "blur(1.5rem)", height: "0px", width: "0px" });
-        }
-    });
-}
-
-// Przetwórz iframe na stronie
-function processIframeLinks(localHtml) {
-    const iframes = document.querySelectorAll("iframe");
-    iframes.forEach((iframe) => {
-        console.log(`[URL Manager] Found unwanted URL in iframe: ${iframe.src}`);
-        console.log(`[URL Manager] Replacing iframe link: ${iframe.src} -> ${localHtml}`);
-        replaceIframe(iframe, localHtml, { border: "2px solid red", filter: "blur(1.5rem)", height: "0px", width: "0px" });
-    });
-}
-
-function isWhitelisted(whitelist) {
-    return whitelist.some(pattern => window.location.href.includes(pattern));
-}
-
-// Uruchom funkcje przetwarzające po załadowaniu strony
+// Główna funkcja przetwarzająca
 function processAllLinks() {
-    const whitelist = [
-        "gmail.com",    
-        "https://github.com",    
-        "https://mail.google.com/",    
-        "majdak.online"
-    ];
-    if (isWhitelisted(whitelist)) {
-        console.log("[URL Manager] Strona na białej liście, pomijam przetwarzanie.");
-        return;
-    }
     const localHtml = chrome.runtime.getURL("replacement.html");
     getUrls((urls) => {
-        processLinks(urls, localHtml);
-        processImageLinks(urls, localHtml);
-        processIframeLinks(localHtml);
-        processThumbnailLinks(urls, localHtml);
+        processElements("a", "href", urls, localHtml, { color: "red", fontWeight: "bold", filter: "blur(1.5rem)", height: "0px", width: "0px" }, true);
+        processElements("img", "src", urls, localHtml, { border: "2px solid red", filter: "blur(1.5rem)", height: "0px", width: "0px" });
+        processElements("iframe", "src", urls, localHtml, { border: "2px solid red", filter: "blur(1.5rem)", height: "0px", width: "0px" });
+        processElements("video", "src", urls, localHtml, { border: "2px solid red", filter: "blur(1.5rem)", height: "0px", width: "0px" });
+        processThumbnails(localHtml, { filter: "blur(1.5rem)", height: "0px", width: "0px", border: "2px solid red" });
     });
 }
 
-// Uruchom funkcje przetwarzające po załadowaniu strony
 processAllLinks();
-
-// Sprawdzaj linki, obrazki i iframe co trzy sekundy
 setInterval(processAllLinks, 1000);
-// Dodaj funkcjonalność do przetwarzania elementów wideo na stronie
-function processVideoLinks(urls, localHtml) {
-    const videos = document.querySelectorAll("video");
-    videos.forEach((video) => {
-        if (urls.some(url => video.src.includes(url))) {
-            console.log(`[URL Manager] Found unwanted URL in video: ${video.src}`);
-            console.log(`[URL Manager] Replacing video link: ${video.src} -> ${localHtml}`);
-            replaceIframe(video, localHtml, { border: "2px solid red", filter: "blur(1.5rem)", height: "0px", width: "0px" });
-        }
-    });
-}
-
-// Uruchom funkcje przetwarzające po załadowaniu strony
-// function processAllLinks() {
-//     const localHtml = chrome.runtime.getURL("replacement.html");
-//     getUrls((urls) => {
-//         processLinks(urls, localHtml);
-//         processImageLinks(urls, localHtml);
-//         processIframeLinks(localHtml);
-//         processVideoLinks(urls, localHtml);
-//         // processThumbnailLinks(urls, localHtml);
-//     });
-// }
