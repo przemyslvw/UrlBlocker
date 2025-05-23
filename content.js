@@ -44,7 +44,18 @@ function processThumbnails(localHtml, style = {}) {
 }
 
 // Główna funkcja przetwarzająca
+// Lista domen do whitelisty (nie wykonuj kodu na tych stronach)
+const WHITELIST = [
+    "https://mail.google.com/",
+    "https://majdak.onine"
+];
+
+function isWhitelisted() {
+    return WHITELIST.some(domain => window.location.hostname.includes(domain));
+}
+
 function processAllLinks() {
+    if (isWhitelisted()) return;
     const localHtml = chrome.runtime.getURL("replacement.html");
     getUrls((urls) => {
         processElements("a", "href", urls, localHtml, { color: "red", fontWeight: "bold", filter: "blur(1.5rem)", height: "0px", width: "0px" }, true);
