@@ -52,7 +52,7 @@ function processImageLinks(urls, localHtml) {
 }
 
 // Przetwórz miniatury na ytube znacznik <ytd-thumbnail>
-function processThumbnailLinks(localHtml) {
+function processThumbnailLinks(urls, localHtml) {
     const thumbnails = [
         ...document.querySelectorAll("ytd-thumbnail"),
         ...document.querySelectorAll("yt-thumbnail-view-model"),
@@ -61,9 +61,12 @@ function processThumbnailLinks(localHtml) {
         ...document.querySelectorAll("yt-collection-thumbnail-view-model")
     ];
     thumbnails.forEach((thumbnail) => {
+        // Sprawdź, czy element ma src i czy zawiera niechciany URL
+        if (thumbnail.src && urls.some(url => thumbnail.src.includes(url))) {
             console.log(`[URL Manager] Found unwanted URL in thumbnail: ${thumbnail.src}`);
             console.log(`[URL Manager] Replacing thumbnail link: ${thumbnail.src} -> ${localHtml}`);
             replaceImage(thumbnail, localHtml, { border: "2px solid red", filter: "blur(1.5rem)", height: "0px", width: "0px" });
+        }
     });
 }
 
@@ -77,14 +80,26 @@ function processIframeLinks(localHtml) {
     });
 }
 
+function isWhitelisted(whitelist) {
+    return whitelist.some(pattern => window.location.href.includes(pattern));
+}
+
 // Uruchom funkcje przetwarzające po załadowaniu strony
 function processAllLinks() {
+    const whitelist = [
+        "gmail.com",    
+        "majdak.online"
+    ];
+    if (isWhitelisted(whitelist)) {
+        console.log("[URL Manager] Strona na białej liście, pomijam przetwarzanie.");
+        return;
+    }
     const localHtml = chrome.runtime.getURL("replacement.html");
     getUrls((urls) => {
         processLinks(urls, localHtml);
         processImageLinks(urls, localHtml);
         processIframeLinks(localHtml);
-        processThumbnailLinks(localHtml);
+        processThumbnailLinks(urls, localHtml);
     });
 }
 
