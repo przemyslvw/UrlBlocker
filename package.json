@@ -1,0 +1,19 @@
+{
+  "name": "url-blocker",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint . --ext .ts,.tsx",
+    "update:all": "npx npm-check-updates -u && npm install",
+    "install:legacy": "npm install --legacy-peer-deps",
+    "build": "vite build && vite build --config vite.content.config.js",
+    "dev": "vite"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.1.1",
+    "typescript": "^5.8.3",
+    "vite": "^7.0.0",
+    "vite-plugin-static-copy": "^3.1.0"
+  }
+}

@@ -1,13 +1,14 @@
-const urlInput = document.getElementById('urlInput');
-const addUrlButton = document.getElementById('addUrlButton');
-const urlList = document.getElementById('urlList');
+const urlInput = document.getElementById('urlInput') as HTMLInputElement | null;
+const addUrlButton = document.getElementById('addUrlButton') as HTMLButtonElement | null;
+const urlList = document.getElementById('urlList') as HTMLUListElement | null;
 
 // Załaduj URL-e z pamięci
-function loadUrls() {
-    chrome.storage.sync.get('urls', (data) => {
-        const urls = data.urls || [];
+function loadUrls(): void {
+    if (!urlList) return;
+    chrome.storage.sync.get('urls', (data: { urls?: string[] }) => {
+        const urls: string[] = data.urls || [];
         urlList.innerHTML = '';
-        urls.forEach((url, index) => {
+        urls.forEach((url: string, index: number) => {
             const li = document.createElement('li');
             li.textContent = url;
 
@@ -22,38 +23,41 @@ function loadUrls() {
 }
 
 // Dodaj URL do listy
-function addUrl() {
-    const newUrl = urlInput.value.trim();
+function addUrl(): void {
+    if (!urlInput) return;
+    const newUrl: string = urlInput.value.trim();
     if (!newUrl) return;
 
-    chrome.storage.sync.get('urls', (data) => {
-        const urls = data.urls || [];
+    chrome.storage.sync.get('urls', (data: { urls?: string[] }) => {
+        const urls: string[] = data.urls || [];
         urls.push(newUrl);
         chrome.storage.sync.set({ urls }, () => {
-            urlInput.value = '';
+            if (urlInput) urlInput.value = '';
             loadUrls();
         });
     });
 }
 
 // Usuń URL z listy
-function removeUrl(index) {
-    chrome.storage.sync.get('urls', (data) => {
-        const urls = data.urls || [];
+function removeUrl(index: number): void {
+    chrome.storage.sync.get('urls', (data: { urls?: string[] }) => {
+        const urls: string[] = data.urls || [];
         urls.splice(index, 1);
         chrome.storage.sync.set({ urls }, loadUrls);
     });
 }
 
 // Nasłuchiwacze zdarzeń
-addUrlButton.addEventListener('click', addUrl);
+if (addUrlButton) {
+    addUrlButton.addEventListener('click', addUrl);
+}
 
 // Początkowe załadowanie
 loadUrls();
 
 // Losowe powitanie
-function showRandomGreeting() {
-    const greetings = [
+function showRandomGreeting(): void {
+    const greetings: string[] = [
         "Witaj!", 
         "Cześć!", 
         "Miłego dnia!", 
@@ -65,9 +69,9 @@ function showRandomGreeting() {
         "Jak leci?", 
         "Co słychać?"
     ];
-    const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
+    const randomGreeting: string = greetings[Math.floor(Math.random() * greetings.length)];
     const greetingDiv = document.getElementById("greeting");
-    greetingDiv.textContent = randomGreeting;
+    if (greetingDiv) greetingDiv.textContent = randomGreeting;
 }
 
 // Wywołanie powitania po załadowaniu popupu

@@ -4,6 +4,10 @@
     "version": "1.2.2",
     "description": "Manage a list of URLs via a popup interface.",
     "permissions": ["storage"],
+    "background": {
+        "service_worker": "background.js",
+        "type": "module"
+    },
     "host_permissions": ["<all_urls>"],
     "action": {
         "default_popup": "popup.html",
@@ -16,7 +20,7 @@
     "content_scripts": [
         {
             "matches": ["<all_urls>"],
-            "js": ["redirect.js", "content.js"]
+            "js": ["content.js"]
         }
     ]
 }

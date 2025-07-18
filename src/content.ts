@@ -1,27 +1,34 @@
 // Pobierz listę URL-i z chrome.storage
-function getUrls(callback) {
-    chrome.storage.sync.get("urls", (data) => {
+function getUrls(callback: (urls: string[]) => void): void {
+    chrome.storage.sync.get("urls", (data: { urls?: string[] }) => {
         callback(data.urls || []);
     });
 }
 
 // Uniwersalna funkcja do podmiany atrybutu i stylu elementu
-function replaceElement(element, attr, localHtml, style = {}) {
-    if (attr) element[attr] = localHtml;
+function replaceElement(element: HTMLElement, attr: string, localHtml: string, style: Partial<CSSStyleDeclaration> = {}): void {
+    if (attr) (element as any)[attr] = localHtml;
     Object.assign(element.style, style);
 }
 
 // Sprawdź, czy element zawiera niechciany URL
-function hasUnwantedUrl(element, attr, urls) {
-    return urls.some(url => (element[attr] || "").includes(url));
+function hasUnwantedUrl(element: HTMLElement, attr: string, urls: string[]): boolean {
+    return urls.some(url => ((element as any)[attr] || "").includes(url));
 }
 
 // Przetwórz elementy na stronie
-function processElements(selector, attr, urls, localHtml, style = {}, remove = false) {
-    document.querySelectorAll(selector).forEach((el) => {
+function processElements(
+    selector: string,
+    attr: string,
+    urls: string[],
+    localHtml: string,
+    style: Partial<CSSStyleDeclaration> = {},
+    remove = false
+): void {
+    document.querySelectorAll<HTMLElement>(selector).forEach((el) => {
         if (hasUnwantedUrl(el, attr, urls)) {
-            console.log(`[URL Manager] Found unwanted URL in ${selector}: ${el[attr]}`);
-            console.log(`[URL Manager] Replacing: ${el[attr]} -> ${localHtml}`);
+            console.log(`[URL Manager] Found unwanted URL in ${selector}: ${(el as any)[attr]}`);
+            console.log(`[URL Manager] Replacing: ${(el as any)[attr]} -> ${localHtml}`);
             replaceElement(el, attr, localHtml, style);
             if (remove && el.parentElement) el.remove();
         }
@@ -29,7 +36,7 @@ function processElements(selector, attr, urls, localHtml, style = {}, remove = f
 }
 
 // Przetwórz miniatury YouTube (nie mają src, ale można je zamazać)
-function processThumbnails(localHtml, style = {}) {
+function processThumbnails(localHtml: string, style: Partial<CSSStyleDeclaration> = {}): void {
     [
         "ytd-thumbnail",
         "yt-thumbnail-view-model",
@@ -37,7 +44,7 @@ function processThumbnails(localHtml, style = {}) {
         "ytm-shorts-lockup-view-model",
         "yt-collection-thumbnail-view-model"
     ].forEach(selector => {
-        document.querySelectorAll(selector).forEach(thumbnail => {
+        document.querySelectorAll<HTMLElement>(selector).forEach(thumbnail => {
             Object.assign(thumbnail.style, style);
         });
     });
@@ -46,11 +53,11 @@ function processThumbnails(localHtml, style = {}) {
 // Główna funkcja przetwarzająca
 // Lista domen do whitelisty (nie wykonuj kodu na tych stronach)
 const WHITELIST = [
-    "https://mail.google.com/",
-    "https://majdak.onine"
+    "mail.google.com",
+    "majdak.online"
 ];
 
-function isWhitelisted() {
+function isWhitelisted(): boolean {
     return WHITELIST.some(domain => window.location.hostname.includes(domain));
 }
 
