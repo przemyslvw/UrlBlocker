@@ -77,3 +77,12 @@ function showRandomGreeting(): void {
 // Wywołanie powitania po załadowaniu popupu
 showRandomGreeting();
 
+// Ustaw numer wersji w footerze po załadowaniu DOM
+
+document.addEventListener('DOMContentLoaded', () => {
+  const versionSpan = document.getElementById('version');
+  if (versionSpan && typeof __APP_VERSION__ !== 'undefined') {
+    versionSpan.textContent = __APP_VERSION__;
+  }
+});
+

@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+import pkg from './package.json' assert { type: 'json' };
 
 export default defineConfig({
   root: 'src',
@@ -19,6 +20,9 @@ export default defineConfig({
         assetFileNames: '[name][extname]'
       }
     }
+  },
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version)
   },
   plugins: [
     viteStaticCopy({
