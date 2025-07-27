@@ -1,7 +1,7 @@
 {
   "name": "url-blocker",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.2.2",
   "type": "module",
   "scripts": {
     "lint": "eslint . --ext .ts,.tsx",
