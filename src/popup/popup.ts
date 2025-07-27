@@ -1,6 +1,6 @@
-const urlInput = document.getElementById('urlInput') as HTMLInputElement | null;
-const addUrlButton = document.getElementById('addUrlButton') as HTMLButtonElement | null;
-const urlList = document.getElementById('urlList') as HTMLUListElement | null;
+const urlInput: HTMLInputElement | null = document.getElementById('urlInput') as HTMLInputElement | null;
+const addUrlButton: HTMLButtonElement | null = document.getElementById('addUrlButton') as HTMLButtonElement | null;
+const urlList: HTMLUListElement | null = document.getElementById('urlList') as HTMLUListElement | null;
 
 // Załaduj URL-e z pamięci
 function loadUrls(): void {
@@ -8,13 +8,13 @@ function loadUrls(): void {
     chrome.storage.sync.get('urls', (data: { urls?: string[] }) => {
         const urls: string[] = data.urls || [];
         urlList.innerHTML = '';
-        urls.forEach((url: string, index: number) => {
+        urls.forEach((url: string, index: number): void => {
             const li = document.createElement('li');
             li.textContent = url;
 
             const removeButton = document.createElement('button');
             removeButton.textContent = 'Usuń';
-            removeButton.addEventListener('click', () => removeUrl(index));
+            removeButton.addEventListener('click', (): void => removeUrl(index));
 
             li.appendChild(removeButton);
             urlList.appendChild(li);
@@ -23,7 +23,7 @@ function loadUrls(): void {
 }
 
 // Obsługa ukrywania miniatur
-const toggleThumbnails = document.getElementById('toggleThumbnails') as HTMLInputElement | null;
+const toggleThumbnails: HTMLInputElement | null = document.getElementById('toggleThumbnails') as HTMLInputElement | null;
 
 if (toggleThumbnails) {
   // Ustaw stan z pamięci
@@ -32,7 +32,7 @@ if (toggleThumbnails) {
   });
 
   // Obsługa zmiany
-  toggleThumbnails.addEventListener('change', () => {
+  toggleThumbnails.addEventListener('change', (): void => {
     chrome.storage.sync.set({ thumbnailsEnabled: toggleThumbnails.checked });
   });
 }
@@ -46,7 +46,7 @@ function addUrl(): void {
     chrome.storage.sync.get('urls', (data: { urls?: string[] }) => {
         const urls: string[] = data.urls || [];
         urls.push(newUrl);
-        chrome.storage.sync.set({ urls }, () => {
+        chrome.storage.sync.set({ urls }, (): void => {
             if (urlInput) urlInput.value = '';
             loadUrls();
         });
@@ -64,7 +64,7 @@ function removeUrl(index: number): void {
 
 // Nasłuchiwacze zdarzeń
 if (addUrlButton) {
-    addUrlButton.addEventListener('click', addUrl);
+    addUrlButton.addEventListener('click', (event: MouseEvent): void => addUrl());
 }
 
 // Początkowe załadowanie
@@ -89,13 +89,11 @@ function showRandomGreeting(): void {
     if (greetingDiv) greetingDiv.textContent = randomGreeting;
 }
 
-// Wywołanie powitania po załadowaniu popupu
-showRandomGreeting();
+// Ustaw powitanie i numer wersji w footerze po załadowaniu DOM
 
-// Ustaw numer wersji w footerze po załadowaniu DOM
-
-document.addEventListener('DOMContentLoaded', () => {
-  const versionSpan = document.getElementById('version');
+document.addEventListener('DOMContentLoaded', (): void => {
+  showRandomGreeting();
+  const versionSpan: HTMLElement | null = document.getElementById('version');
   if (versionSpan && typeof __APP_VERSION__ !== 'undefined') {
     versionSpan.textContent = __APP_VERSION__;
   }
