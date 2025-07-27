@@ -13,12 +13,24 @@ function processThumbnails(style: Partial<CSSStyleDeclaration> = {}): void {
     [
         "ytd-thumbnail",
         "yt-thumbnail-view-model",
+        "ytm-media-item-thumbnail",
+        "ytd-rich-section-renderer",
+        "ytm-compact-video-renderer-thumbnail",
         "ytd-rich-shelf-renderer",
         "ytm-shorts-lockup-view-model",
         "yt-collection-thumbnail-view-model"
     ].forEach(selector => {
         document.querySelectorAll<HTMLElement>(selector).forEach(thumbnail => {
             Object.assign(thumbnail.style, style);
+        });
+    });
+}
+
+// Przetwórz reklamy na różnych stronach (np. banery, boksy, itp.)
+function processAds(adSelectors: string[], style: Partial<CSSStyleDeclaration> = {}): void {
+    adSelectors.forEach(selector => {
+        document.querySelectorAll<HTMLElement>(selector).forEach(ad => {
+            Object.assign(ad.style, style);
         });
     });
 }
@@ -46,6 +58,13 @@ function processAllLinks(): void {
                 processThumbnails({ filter: "blur(1.5rem)", height: "0px", width: "0px", border: "2px solid red" });
             }
         });
+        // Obsługa reklam na różnych stronach
+        processAds(
+            [
+                ".ad-container"
+            ],
+            { height: "0px", width: "0px", minHeight: "0px", minWidth: "0px" }
+        );
     });
 }
 
