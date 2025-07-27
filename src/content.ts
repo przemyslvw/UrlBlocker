@@ -24,7 +24,7 @@ function processThumbnails(localHtml: string, style: Partial<CSSStyleDeclaration
 
 // Główna funkcja przetwarzająca
 // Lista domen do whitelisty (nie wykonuj kodu na tych stronach)
-const WHITELIST = [
+const WHITELIST: string[] = [
     "mail.google.com",
     "majdak.online"
 ];
@@ -33,7 +33,7 @@ function isWhitelisted(): boolean {
     return WHITELIST.some(domain => window.location.hostname.includes(domain));
 }
 
-function processAllLinks() {
+function processAllLinks(): void {
     if (isWhitelisted()) return;
     const localHtml = chrome.runtime.getURL("replacement.html");
     getUrls((urls) => {
@@ -45,13 +45,13 @@ function processAllLinks() {
     });
 }
 
-const throttledProcessAllLinks = throttle(processAllLinks, 1000);
+const throttledProcessAllLinks: () => void = throttle(processAllLinks, 1000);
 
 // Na starcie
 throttledProcessAllLinks();
 
 // Nasłuchiwanie zmian DOM
-const observer = new MutationObserver(() => {
+const observer: MutationObserver = new MutationObserver((): void => {
   throttledProcessAllLinks();
 });
 observer.observe(document.body, { childList: true, subtree: true, attributes: true });
