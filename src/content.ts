@@ -1,11 +1,12 @@
+import { processElements, throttle } from "./helpers/dom";
+import './helpers/redirect';
+
 // Pobierz listę URL-i z chrome.storage
 function getUrls(callback: (urls: string[]) => void): void {
     chrome.storage.sync.get("urls", (data: { urls?: string[] }) => {
         callback(data.urls || []);
     });
 }
-
-import { processElements, throttle } from "./helpers/dom";
 
 // Przetwórz miniatury YouTube (nie mają src, ale można je zamazać)
 function processThumbnails(localHtml: string, style: Partial<CSSStyleDeclaration> = {}): void {
@@ -58,4 +59,5 @@ throttledProcessAllLinks();
 const observer: MutationObserver = new MutationObserver((): void => {
   throttledProcessAllLinks();
 });
+
 observer.observe(document.body, { childList: true, subtree: true, attributes: true });
