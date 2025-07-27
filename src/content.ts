@@ -9,7 +9,7 @@ function getUrls(callback: (urls: string[]) => void): void {
 }
 
 // Przetwórz miniatury YouTube (nie mają src, ale można je zamazać)
-function processThumbnails(localHtml: string, style: Partial<CSSStyleDeclaration> = {}): void {
+function processThumbnails(style: Partial<CSSStyleDeclaration> = {}): void {
     [
         "ytd-thumbnail",
         "yt-thumbnail-view-model",
@@ -36,15 +36,14 @@ function isWhitelisted(): boolean {
 
 function processAllLinks(): void {
     if (isWhitelisted()) return;
-    const localHtml = chrome.runtime.getURL("replacement.html");
     getUrls((urls) => {
-        processElements("a", "href", urls, localHtml, { color: "red", fontWeight: "bold", filter: "blur(1.5rem)", height: "0px", width: "0px" }, true);
-        processElements("img", "src", urls, localHtml, { border: "2px solid red", filter: "blur(1.5rem)", height: "0px", width: "0px" });
-        processElements("iframe", "src", urls, localHtml, { border: "2px solid red", filter: "blur(1.5rem)", height: "0px", width: "0px" });
-        processElements("video", "src", urls, localHtml, { border: "2px solid red", filter: "blur(1.5rem)", height: "0px", width: "0px" });
+        processElements("a", "href", urls, { color: "red", fontWeight: "bold", filter: "blur(1.5rem)", height: "0px", width: "0px" }, true);
+        processElements("img", "src", urls, { border: "2px solid red", filter: "blur(1.5rem)", height: "0px", width: "0px" });
+        processElements("iframe", "src", urls, { border: "2px solid red", filter: "blur(1.5rem)", height: "0px", width: "0px" });
+        processElements("video", "src", urls, { border: "2px solid red", filter: "blur(1.5rem)", height: "0px", width: "0px" });
         chrome.storage.sync.get('thumbnailsEnabled', (data: { thumbnailsEnabled?: boolean }) => {
             if (data.thumbnailsEnabled !== false) {
-                processThumbnails(localHtml, { filter: "blur(1.5rem)", height: "0px", width: "0px", border: "2px solid red" });
+                processThumbnails({ filter: "blur(1.5rem)", height: "0px", width: "0px", border: "2px solid red" });
             }
         });
     });
