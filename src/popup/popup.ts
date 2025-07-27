@@ -22,6 +22,21 @@ function loadUrls(): void {
     });
 }
 
+// Obsługa ukrywania miniatur
+const toggleThumbnails = document.getElementById('toggleThumbnails') as HTMLInputElement | null;
+
+if (toggleThumbnails) {
+  // Ustaw stan z pamięci
+  chrome.storage.sync.get('thumbnailsEnabled', (data: { thumbnailsEnabled?: boolean }) => {
+    toggleThumbnails.checked = data.thumbnailsEnabled !== false; // domyślnie włączone
+  });
+
+  // Obsługa zmiany
+  toggleThumbnails.addEventListener('change', () => {
+    chrome.storage.sync.set({ thumbnailsEnabled: toggleThumbnails.checked });
+  });
+}
+
 // Dodaj URL do listy
 function addUrl(): void {
     if (!urlInput) return;
