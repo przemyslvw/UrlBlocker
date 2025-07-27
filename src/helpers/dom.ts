@@ -1,6 +1,32 @@
 // Uniwersalne funkcje do manipulacji DOM i sprawdzania URL-i
 
 /**
+ * Tworzy throttlowaną wersję funkcji (nie częściej niż co delay ms)
+ */
+export function throttle<T extends (...args: any[]) => void>(fn: T, delay: number): T {
+  let last = 0;
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+  let pendingArgs: any[] | null = null;
+
+  const throttled = function(this: any, ...args: any[]) {
+    const now = Date.now();
+    if (now - last >= delay) {
+      last = now;
+      fn.apply(this, args);
+    } else {
+      if (timeout) clearTimeout(timeout);
+      pendingArgs = args;
+      timeout = setTimeout(() => {
+        last = Date.now();
+        fn.apply(this, pendingArgs!);
+        timeout = null;
+      }, delay - (now - last));
+    }
+  } as T;
+  return throttled;
+}
+
+/**
  * Podmienia atrybut i styl elementu
  */
 export function replaceElement(

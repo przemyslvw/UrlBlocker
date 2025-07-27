@@ -5,7 +5,7 @@ function getUrls(callback: (urls: string[]) => void): void {
     });
 }
 
-import { processElements } from "./helpers/dom";
+import { processElements, throttle } from "./helpers/dom";
 
 // Przetwórz miniatury YouTube (nie mają src, ale można je zamazać)
 function processThumbnails(localHtml: string, style: Partial<CSSStyleDeclaration> = {}): void {
@@ -45,5 +45,13 @@ function processAllLinks() {
     });
 }
 
-processAllLinks();
-setInterval(processAllLinks, 1000);
+const throttledProcessAllLinks = throttle(processAllLinks, 1000);
+
+// Na starcie
+throttledProcessAllLinks();
+
+// Nasłuchiwanie zmian DOM
+const observer = new MutationObserver(() => {
+  throttledProcessAllLinks();
+});
+observer.observe(document.body, { childList: true, subtree: true, attributes: true });
