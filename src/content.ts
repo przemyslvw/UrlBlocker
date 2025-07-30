@@ -1,81 +1,95 @@
 import { processElements, throttle } from "./helpers/dom";
 import './helpers/redirect';
 
-// Pobierz listę URL-i z chrome.storage
-function getUrls(callback: (urls: string[]) => void): void {
-    chrome.storage.sync.get("urls", (data: { urls?: string[] }) => {
-        callback(data.urls || []);
-    });
+type UrlsCallback = (urls: string[]) => void;
+
+const WHITELIST = [
+    "mail.google.com",
+    "majdak.online"
+];
+
+const YT_THUMBNAIL_SELECTORS = [
+    "ytd-thumbnail",
+    "yt-thumbnail-view-model",
+    "ytd-ad-slot-renderer",
+    "ytm-media-item-thumbnail",
+    "ytd-rich-section-renderer",
+    "ytm-compact-video-renderer-thumbnail",
+    "ytd-rich-shelf-renderer",
+    "ytm-shorts-lockup-view-model",
+    "yt-collection-thumbnail-view-model"
+];
+
+const AD_SELECTORS = [
+    ".ad-container"
+];
+
+const BLUR_STYLE: Partial<CSSStyleDeclaration> = {
+    filter: "blur(1.5rem)",
+    height: "0px",
+    width: "0px",
+    border: "2px solid red"
+};
+
+const LINK_STYLE: Partial<CSSStyleDeclaration> = {
+    color: "red",
+    fontWeight: "bold",
+    ...BLUR_STYLE
+};
+
+const AD_STYLE: Partial<CSSStyleDeclaration> = {
+    height: "0px",
+    width: "0px",
+    minHeight: "0px",
+    minWidth: "0px"
+};
+
+function getUrls(callback: UrlsCallback): void {
+    chrome.storage.sync.get("urls", ({ urls = [] }) => callback(urls));
 }
 
-// Przetwórz miniatury YouTube (nie mają src, ale można je zamazać)
-function processThumbnails(style: Partial<CSSStyleDeclaration> = {}): void {
-    [
-        "ytd-thumbnail",
-        "yt-thumbnail-view-model",
-        "ytm-media-item-thumbnail",
-        "ytd-rich-section-renderer",
-        "ytm-compact-video-renderer-thumbnail",
-        "ytd-rich-shelf-renderer",
-        "ytm-shorts-lockup-view-model",
-        "yt-collection-thumbnail-view-model"
-    ].forEach(selector => {
-        document.querySelectorAll<HTMLElement>(selector).forEach(thumbnail => {
-            Object.assign(thumbnail.style, style);
+function isWhitelisted(): boolean {
+    return WHITELIST.some(domain => window.location.hostname.includes(domain));
+}
+
+function processThumbnails(style: Partial<CSSStyleDeclaration>): void {
+    YT_THUMBNAIL_SELECTORS.forEach(selector => {
+        document.querySelectorAll<HTMLElement>(selector).forEach(el => {
+            Object.assign(el.style, style);
         });
     });
 }
 
-// Przetwórz reklamy na różnych stronach (np. banery, boksy, itp.)
-function processAds(adSelectors: string[], style: Partial<CSSStyleDeclaration> = {}): void {
-    adSelectors.forEach(selector => {
+function processAds(style: Partial<CSSStyleDeclaration>): void {
+    AD_SELECTORS.forEach(selector => {
         document.querySelectorAll<HTMLElement>(selector).forEach(ad => {
             Object.assign(ad.style, style);
         });
     });
 }
 
-// Główna funkcja przetwarzająca
-// Lista domen do whitelisty (nie wykonuj kodu na tych stronach)
-const WHITELIST: string[] = [
-    "mail.google.com",
-    "majdak.online"
-];
-
-function isWhitelisted(): boolean {
-    return WHITELIST.some(domain => window.location.hostname.includes(domain));
-}
-
 function processAllLinks(): void {
     if (isWhitelisted()) return;
-    getUrls((urls) => {
-        processElements("a", "href", urls, { color: "red", fontWeight: "bold", filter: "blur(1.5rem)", height: "0px", width: "0px" }, true);
-        processElements("img", "src", urls, { border: "2px solid red", filter: "blur(1.5rem)", height: "0px", width: "0px" });
-        processElements("iframe", "src", urls, { border: "2px solid red", filter: "blur(1.5rem)", height: "0px", width: "0px" });
-        processElements("video", "src", urls, { border: "2px solid red", filter: "blur(1.5rem)", height: "0px", width: "0px" });
-        chrome.storage.sync.get('thumbnailsEnabled', (data: { thumbnailsEnabled?: boolean }) => {
-            if (data.thumbnailsEnabled !== false) {
-                processThumbnails({ filter: "blur(1.5rem)", height: "0px", width: "0px", border: "2px solid red" });
+
+    getUrls(urls => {
+        processElements("a", "href", urls, LINK_STYLE, true);
+        ["img", "iframe", "video"].forEach(tag =>
+            processElements(tag, "src", urls, BLUR_STYLE)
+        );
+
+        chrome.storage.sync.get('thumbnailsEnabled', ({ thumbnailsEnabled }) => {
+            if (thumbnailsEnabled !== false) {
+                processThumbnails(BLUR_STYLE);
             }
         });
-        // Obsługa reklam na różnych stronach
-        processAds(
-            [
-                ".ad-container"
-            ],
-            { height: "0px", width: "0px", minHeight: "0px", minWidth: "0px" }
-        );
+
+        processAds(AD_STYLE);
     });
 }
 
-const throttledProcessAllLinks: () => void = throttle(processAllLinks, 1000);
+const throttledProcessAllLinks = throttle(processAllLinks, 1000);
 
-// Na starcie
 throttledProcessAllLinks();
 
-// Nasłuchiwanie zmian DOM
-const observer: MutationObserver = new MutationObserver((): void => {
-  throttledProcessAllLinks();
-});
-
+const observer = new MutationObserver(throttledProcessAllLinks);
 observer.observe(document.body, { childList: true, subtree: true, attributes: true });
